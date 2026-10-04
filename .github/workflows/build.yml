@@ -15,7 +15,7 @@ jobs:
     name: Test, build and package
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Toolchain
         run: swift --version
@@ -41,7 +41,7 @@ jobs:
           scripts/make-dmg.sh
           lipo -info build/Numo.app/Contents/MacOS/Numo
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Numo-${{ steps.version.outputs.version }}
           path: build/Numo-*.dmg
