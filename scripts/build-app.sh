@@ -12,9 +12,16 @@ APP="build/Numo.app"
 # Build outside the project folder: SwiftPM's SQLite build database fails in some synced folders.
 SCRATCH="${NUMO_BUILD_DIR:-$HOME/Library/Caches/numo-build}"
 if [ "${UNIVERSAL:-0}" = "1" ]; then
-  # Apple silicon + Intel. Needs Xcode (used on CI); the Command Line Tools build one arch only.
-  swift build -c release --product Numo --scratch-path "$SCRATCH" --arch arm64 --arch x86_64
-  BIN="$SCRATCH/apple/Products/Release/Numo"
+  # Apple silicon + Intel: build each arch on its own and merge with lipo.
+  # (A single multi-arch `swift build` switches to the Xcode build system, which rejects
+  # the target's swiftLanguageMode setting.)
+  for arch in arm64 x86_64; do
+    swift build -c release --product Numo --scratch-path "$SCRATCH" --arch "$arch"
+  done
+  BIN="$SCRATCH/Numo-universal"
+  lipo -create -output "$BIN" \
+    "$SCRATCH/arm64-apple-macosx/release/Numo" \
+    "$SCRATCH/x86_64-apple-macosx/release/Numo"
 else
   swift build -c release --product Numo --scratch-path "$SCRATCH"
   BIN="$SCRATCH/release/Numo"
